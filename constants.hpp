@@ -2,6 +2,7 @@
 
 //Numeric Limits
 static constexpr int64_t MAX_ASSET_AMOUNT = 4611686018427387903;
+static constexpr uint64_t MAX_ASSET_AMOUNT_U64 = 4611686018427387903;
 
 //Symbols
 static constexpr eosio::symbol LSWAX_SYMBOL = eosio::symbol("LSWAX", 8);

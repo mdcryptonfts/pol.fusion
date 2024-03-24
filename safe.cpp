@@ -14,6 +14,23 @@ int64_t polcontract::safeAddInt64(const int64_t& a, const int64_t& b){
 	return combinedValue;
 }
 
+uint64_t polcontract::safeMulUInt64(const uint64_t& a, const uint64_t& b){
+
+    if( a == 0 || b == 0 ) return 0;
+
+    if( a > MAX_ASSET_AMOUNT_U64 || b > MAX_ASSET_AMOUNT_U64 ){
+    	check( false, "multiplication input is outside of range" );
+    }
+
+    check( a <= MAX_ASSET_AMOUNT_U64 / b, "multiplication would result in overflow" );
+
+    uint64_t result = a * b;
+
+    check( result <= MAX_ASSET_AMOUNT_U64, "multiplication result is outside of the acceptable range" );
+
+    return result;
+}
+
 int64_t polcontract::safeSubInt64(const int64_t& a, const int64_t& b){
 	if(a == 0){
 		check( b == 0, "subtraction would result in negative number" );

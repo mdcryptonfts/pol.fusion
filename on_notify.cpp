@@ -126,8 +126,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         check( wax_amount_to_rent >= MINIMUM_WAX_TO_RENT, ( "minimum wax amount to rent is " + std::to_string( MINIMUM_WAX_TO_RENT ) ).c_str() );
         check( wax_amount_to_rent <= MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + std::to_string( MAXIMUM_WAX_TO_RENT ) ).c_str() );
 
-        /* TODO: Add safety checks for multiplying uint64_t */
-        const uint64_t amount_to_rent_with_precision = 100000000 * wax_amount_to_rent;
+        const uint64_t amount_to_rent_with_precision = safeMulUInt64(100000000, wax_amount_to_rent);
 
         //make sure there is anough wax available for this rental
         check( s.wax_available_for_rentals.amount >= amount_to_rent_with_precision, "there is not enough wax in the rental pool to cover this rental" );
@@ -192,8 +191,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         check( wax_amount_to_rent >= MINIMUM_WAX_TO_RENT, ( "minimum wax amount to rent is " + std::to_string( MINIMUM_WAX_TO_RENT ) ).c_str() );
         check( wax_amount_to_rent <= MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + std::to_string( MAXIMUM_WAX_TO_RENT ) ).c_str() );
 
-        /* TODO: Add safety checks for multiplying uint64_t */
-        const uint64_t amount_to_rent_with_precision = 100000000 * wax_amount_to_rent;
+        const uint64_t amount_to_rent_with_precision = safeMulUInt64(100000000, wax_amount_to_rent);
 
         //make sure there is anough wax available for this rental
         check( s.wax_available_for_rentals.amount >= amount_to_rent_with_precision, "there is not enough wax in the rental pool to cover this rental" );
@@ -261,8 +259,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         check( wax_amount_to_rent >= MINIMUM_WAX_TO_INCREASE, ( "minimum wax amount to increase is " + std::to_string( MINIMUM_WAX_TO_INCREASE ) ).c_str() );
         check( safeAddInt64( wax_amount_to_rent, (int64_t) itr->amount_staked.amount ) <= MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + std::to_string( MAXIMUM_WAX_TO_RENT ) ).c_str() );
 
-        /* TODO: Add safety checks for multiplying uint64_t */
-        const uint64_t amount_to_rent_with_precision = 100000000 * wax_amount_to_rent;
+        const uint64_t amount_to_rent_with_precision = safeMulUInt64(100000000, wax_amount_to_rent);
 
         //make sure there is anough wax available for this rental
         check( s.wax_available_for_rentals.amount >= amount_to_rent_with_precision, "there is not enough wax in the rental pool to cover this rental" );

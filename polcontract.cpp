@@ -143,3 +143,14 @@ ACTION polcontract::rentcpu(const eosio::name& renter, const eosio::name& cpu_re
 		});
 	}
 }
+
+ACTION polcontract::setrentprice(const eosio::asset& cost_to_rent_1_wax){
+	require_auth( DAPP_CONTRACT );
+	update_state();
+	check( cost_to_rent_1_wax.amount > 0, "cost must be positive" );
+	check( cost_to_rent_1_wax.symbol == WAX_SYMBOL, "symbol and precision must match WAX" );
+
+	state s = state_s.get();
+	s.cost_to_rent_1_wax = cost_to_rent_1_wax;
+	state_s.set(s, _self);
+}

@@ -39,6 +39,7 @@ CONTRACT polcontract : public contract {
 		ACTION clearexpired(const int& limit);
 		ACTION initstate();
 		ACTION rentcpu(const eosio::name& renter, const eosio::name& cpu_receiver);
+		ACTION setrentprice(const eosio::asset& cost_to_rent_1_wax);
 
 		//Notifications
 		[[eosio::on_notify("eosio.token::transfer")]] void receive_wax_transfer(const name& from, const name& to, const asset& quantity, const std::string& memo);
@@ -67,6 +68,7 @@ CONTRACT polcontract : public contract {
 
 		//Safemath
 		int64_t safeAddInt64(const int64_t& a, const int64_t& b);
+		uint64_t safeMulUInt64(const uint64_t& a, const uint64_t& b);
 		int64_t safeSubInt64(const int64_t& a, const int64_t& b);
 
 };
