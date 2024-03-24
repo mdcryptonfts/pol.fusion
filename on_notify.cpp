@@ -107,6 +107,8 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         state s = state_s.get();
 
+        double profit_made = (double) quantity.amount;
+
         //memo should also include account to rent to 
         const eosio::name cpu_receiver = eosio::name( words[2] );
 
@@ -146,6 +148,9 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
             double amount_to_refund = amount_received_double - expected_amount_received;
 
             if( (int64_t) amount_to_refund > 0 ){
+                //TODO: safesubdouble
+                profit_made -= amount_to_refund;
+
                 transfer_tokens( from, asset( (int64_t) amount_to_refund, WAX_SYMBOL ), WAX_CONTRACT, "cpu rental refund from waxfusion.io - liquid staking protocol" );
             }
         }        
@@ -159,6 +164,10 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
             _r.expires = s.next_day_end_time + ( days_to_rent * SECONDS_PER_DAY );
         });
 
+        check( (int64_t) profit_made > 0, "error with rental cost calculation" );
+        transfer_tokens( DAPP_CONTRACT, asset( (int64_t) profit_made, WAX_SYMBOL ), WAX_CONTRACT, "waxfusion_revenue" );
+
+
         //update the state
         state_s.set(s, _self);
         update_votes();
@@ -169,6 +178,8 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         check( tkcontract == WAX_CONTRACT, "only WAX can be sent with this memo" );
 
         state s = state_s.get();
+
+        double profit_made = (double) quantity.amount;
 
         //memo should also include account to rent to 
         const eosio::name cpu_receiver = eosio::name( words[2] );
@@ -188,17 +199,6 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         check( days_to_rent >= 1, "extension must be at least 1 day" );
         check( days_to_rent <= MAXIMUM_CPU_RENTAL_DAYS, ( "maximum days to rent is " + std::to_string( MAXIMUM_CPU_RENTAL_DAYS ) ).c_str() );
 
-        //check( wax_amount_to_rent >= MINIMUM_WAX_TO_RENT, ( "minimum wax amount to rent is " + std::to_string( MINIMUM_WAX_TO_RENT ) ).c_str() );
-        //check( wax_amount_to_rent <= MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + std::to_string( MAXIMUM_WAX_TO_RENT ) ).c_str() );
-
-        //const uint64_t amount_to_rent_with_precision = safeMulUInt64(1, wax_amount_to_rent);
-
-        //make sure there is anough wax available for this rental
-        //check( s.wax_available_for_rentals.amount >= wax_amount_to_rent, "there is not enough wax in the rental pool to cover this rental" );
-
-        //debit the wax from the rental pool
-        //s.wax_available_for_rentals.amount = safeSubInt64(s.wax_available_for_rentals.amount, wax_amount_to_rent);
-
         double expected_amount_received = (double) s.cost_to_rent_1_wax.amount * ( (double) wax_amount_to_rent * (double) 0.00000001 ) * (double) days_to_rent;
 
         double amount_received_double = (double) quantity.amount;
@@ -211,6 +211,9 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
             double amount_to_refund = amount_received_double - expected_amount_received;
 
             if( (int64_t) amount_to_refund > 0 ){
+                //TODO
+                profit_made -= amount_to_refund;
+
                 transfer_tokens( from, asset( (int64_t) amount_to_refund, WAX_SYMBOL ), WAX_CONTRACT, "cpu rental refund from waxfusion.io - liquid staking protocol" );
             }
         }        
@@ -219,6 +222,9 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         renter_receiver_idx.modify(itr, same_payer, [&](auto &_r){
             _r.expires += ( days_to_rent * SECONDS_PER_DAY );
         });
+
+        check( (int64_t) profit_made > 0, "error with rental cost calculation" );
+        transfer_tokens( DAPP_CONTRACT, asset( (int64_t) profit_made, WAX_SYMBOL ), WAX_CONTRACT, "waxfusion_revenue" );        
 
         //update the state
         state_s.set(s, _self);
@@ -229,6 +235,8 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
     if( words[1] == "increase_rental" ){
         check( tkcontract == WAX_CONTRACT, "only WAX can be sent with this memo" );
         state s = state_s.get();
+
+        double profit_made = (double) quantity.amount;
 
         //memo should also include account to rent to 
         const eosio::name cpu_receiver = eosio::name( words[2] );
@@ -276,6 +284,9 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
             double amount_to_refund = amount_received_double - expected_amount_received;
 
             if( (int64_t) amount_to_refund > 0 ){
+                //TODO
+                profit_made -= amount_to_refund;
+                                
                 transfer_tokens( from, asset( (int64_t) amount_to_refund, WAX_SYMBOL ), WAX_CONTRACT, "cpu rental refund from waxfusion.io - liquid staking protocol" );
             }
         }
@@ -287,6 +298,9 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         renter_receiver_idx.modify(itr, same_payer, [&](auto &_r){
             _r.amount_staked.amount = safeAddInt64( _r.amount_staked.amount, (int64_t) amount_to_rent_with_precision );
         });
+
+        check( (int64_t) profit_made > 0, "error with rental cost calculation" );
+        transfer_tokens( DAPP_CONTRACT, asset( (int64_t) profit_made, WAX_SYMBOL ), WAX_CONTRACT, "waxfusion_revenue" );                
 
         //update the state
         state_s.set(s, _self);
