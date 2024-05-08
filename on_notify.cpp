@@ -143,7 +143,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         double amount_received_double = (double) quantity.amount;
 
-        check( amount_received_double >= expected_amount_received, ("expected to receive " + std::to_string(expected_amount_received) + " WAX" ).c_str() );
+        check( amount_received_double >= expected_amount_received, ("expected to receive " + asset( (int64_t) expected_amount_received, WAX_SYMBOL ).to_string() ).c_str() );
 
         //if they sent more than expected, calculate difference and refund it
         if( amount_received_double > expected_amount_received ){
@@ -209,7 +209,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         double amount_received_double = (double) quantity.amount;
 
-        check( amount_received_double >= expected_amount_received, ("expected to receive " + std::to_string(expected_amount_received) + " WAX" ).c_str() );
+        check( amount_received_double >= expected_amount_received, ("expected to receive " + asset( (int64_t) expected_amount_received, WAX_SYMBOL ).to_string() ).c_str() );
 
         //if they sent more than expected, calculate difference and refund it
         if( amount_received_double > expected_amount_received ){
@@ -287,7 +287,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         double amount_received_double = (double) quantity.amount;
 
-        check( amount_received_double >= expected_amount_received, ("expected to receive " + std::to_string(expected_amount_received) + " WAX" ).c_str() );
+        check( amount_received_double >= expected_amount_received, ("expected to receive " + asset( (int64_t) expected_amount_received, WAX_SYMBOL ).to_string() ).c_str() );
 
         //if they sent more than expected, calculate difference and refund it
         if( amount_received_double > expected_amount_received ){
