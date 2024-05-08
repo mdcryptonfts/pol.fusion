@@ -23,6 +23,6 @@ static const eosio::asset ZERO_WAX = eosio::asset(0, WAX_SYMBOL);
 static constexpr uint64_t MAXIMUM_CPU_RENTAL_DAYS = 365 * 10; /* 10 years */
 static constexpr uint64_t MAXIMUM_WAX_TO_RENT = 10000000; /* 10 Million WAX */
 static constexpr uint64_t MINIMUM_CPU_RENTAL_DAYS = TESTNET ? 1 : 30; /* 1 Month */
-static constexpr uint64_t MINIMUM_WAX_TO_INCREASE = 100;
+static constexpr uint64_t MINIMUM_WAX_TO_INCREASE = TESTNET ? 5 : 100;
 static constexpr uint64_t MINIMUM_WAX_TO_RENT = TESTNET ? 10 : 500;
 static constexpr uint64_t SECONDS_PER_DAY = 86400;

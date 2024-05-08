@@ -25,13 +25,13 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         double amount_received_double = (double) quantity.amount;
 
         //40% should go into the wax bucket
-        double wax_bucket_allocation = (double) amount_received_double * 0.4;
+        double wax_bucket_allocation = safeMulDouble( (double) amount_received_double, (double) 0.4 );
 
         //40% should be used for buying LSWAX (which gets sent back and added to LSWAX bucket)
-        double buy_lswax_allocation = (double) amount_received_double * 0.4;
+        double buy_lswax_allocation = safeMulDouble( (double) amount_received_double, (double) 0.4 );
 
         //20% should go directly to available_for_rentals
-        double rental_pool_allocation = (double) amount_received_double * 0.2;
+        double rental_pool_allocation = safeMulDouble( (double) amount_received_double, (double) 0.2 );
 
         s.wax_available_for_rentals.amount = safeAddInt64( s.wax_available_for_rentals.amount, (int64_t) rental_pool_allocation );
         s.wax_bucket.amount = safeAddInt64( s.wax_bucket.amount, (int64_t) wax_bucket_allocation );
@@ -73,10 +73,10 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         double amount_received_double = (double) quantity.amount;
 
         //25% should go into the wax bucket
-        double wax_bucket_allocation = (double) amount_received_double * 0.5;
+        double wax_bucket_allocation = safeMulDouble( (double) amount_received_double, (double) 0.5 );
 
         //25% should be used for buying LSWAX (which gets sent back and added to LSWAX bucket)
-        double buy_lswax_allocation = (double) amount_received_double * 0.5;
+        double buy_lswax_allocation = safeMulDouble( (double) amount_received_double, (double) 0.5 );
 
         s.wax_bucket.amount = safeAddInt64( s.wax_bucket.amount, (int64_t) wax_bucket_allocation );
         state_s.set(s, _self);
@@ -104,6 +104,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
     if( words[1] == "rent_cpu" ){
         check( tkcontract == WAX_CONTRACT, "only WAX can be sent with this memo" );
+        check( words.size() >= 5, "memo for rent_cpu operation is incomplete" );
 
         state s = state_s.get();
 
@@ -136,7 +137,9 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         //debit the wax from the rental pool
         s.wax_available_for_rentals.amount = safeSubInt64(s.wax_available_for_rentals.amount, amount_to_rent_with_precision);
 
-        double expected_amount_received = (double) s.cost_to_rent_1_wax.amount * (double) wax_amount_to_rent * (double) days_to_rent;
+        double pre_expected_amount_received = safeMulDouble( (double) s.cost_to_rent_1_wax.amount, (double) wax_amount_to_rent );
+
+        double expected_amount_received = safeMulDouble( pre_expected_amount_received, (double) days_to_rent );
 
         double amount_received_double = (double) quantity.amount;
 
@@ -176,6 +179,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
     if( words[1] == "extend_rental" ){
         check( tkcontract == WAX_CONTRACT, "only WAX can be sent with this memo" );
+        check( words.size() >= 4, "memo for extend_rental operation is incomplete" );
 
         state s = state_s.get();
 
@@ -199,7 +203,9 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         check( days_to_rent >= 1, "extension must be at least 1 day" );
         check( days_to_rent <= MAXIMUM_CPU_RENTAL_DAYS, ( "maximum days to rent is " + std::to_string( MAXIMUM_CPU_RENTAL_DAYS ) ).c_str() );
 
-        double expected_amount_received = (double) s.cost_to_rent_1_wax.amount * ( (double) wax_amount_to_rent * (double) 0.00000001 ) * (double) days_to_rent;
+        double base_price = safeMulDouble( (double) wax_amount_to_rent, (double) 0.00000001 );
+        double pre_expected_amount_received = safeMulDouble( (double) s.cost_to_rent_1_wax.amount, base_price );
+        double expected_amount_received = safeMulDouble( pre_expected_amount_received, (double) days_to_rent );
 
         double amount_received_double = (double) quantity.amount;
 
@@ -235,6 +241,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
     if( words[1] == "increase_rental" ){
         check( tkcontract == WAX_CONTRACT, "only WAX can be sent with this memo" );
         state s = state_s.get();
+        check( words.size() >= 4, "memo for increase_rental operation is incomplete" );
 
         double profit_made = (double) quantity.amount;
 
@@ -253,7 +260,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         check( itr->expires > now(), "this rental has already expired" );
         uint64_t seconds_remaining = itr->expires - now();
 
-        double days_to_rent = (double) seconds_remaining / (double) SECONDS_PER_DAY;
+        double days_to_rent = safeDivDouble( (double) seconds_remaining, (double) SECONDS_PER_DAY );
 
 
         check( itr->expires != 0, "you can't increase a rental if it hasnt been funded yet" );
@@ -262,7 +269,10 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         //check( days_to_rent <= MAXIMUM_CPU_RENTAL_DAYS, ( "maximum days to rent is " + std::to_string( MAXIMUM_CPU_RENTAL_DAYS ) ).c_str() );
 
         check( wax_amount_to_rent >= MINIMUM_WAX_TO_INCREASE, ( "minimum wax amount to increase is " + std::to_string( MINIMUM_WAX_TO_INCREASE ) ).c_str() );
-        check( safeAddInt64( wax_amount_to_rent, (int64_t) itr->amount_staked.amount ) <= MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + std::to_string( MAXIMUM_WAX_TO_RENT ) ).c_str() );
+        
+        double existing_rental_amount = safeMulDouble( (double) itr->amount_staked.amount, (double) 0.00000001 );
+
+        check( safeAddInt64( wax_amount_to_rent, (int64_t) existing_rental_amount ) <= MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + std::to_string( MAXIMUM_WAX_TO_RENT ) ).c_str() );
 
         const uint64_t amount_to_rent_with_precision = safeMulUInt64(100000000, wax_amount_to_rent);
 
@@ -272,7 +282,8 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         //debit the wax from the rental pool
         s.wax_available_for_rentals.amount = safeSubInt64(s.wax_available_for_rentals.amount, amount_to_rent_with_precision);
 
-        double expected_amount_received = (double) s.cost_to_rent_1_wax.amount * (double) wax_amount_to_rent * days_to_rent;
+        double pre_expected_amount_received = safeMulDouble( (double) s.cost_to_rent_1_wax.amount, (double) wax_amount_to_rent );
+        double expected_amount_received = safeMulDouble( pre_expected_amount_received, days_to_rent ); 
 
         double amount_received_double = (double) quantity.amount;
 
@@ -286,7 +297,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
             if( (int64_t) amount_to_refund > 0 ){
                 //TODO
                 profit_made -= amount_to_refund;
-                                
+
                 transfer_tokens( from, asset( (int64_t) amount_to_refund, WAX_SYMBOL ), WAX_CONTRACT, "cpu rental refund from waxfusion.io - liquid staking protocol" );
             }
         }

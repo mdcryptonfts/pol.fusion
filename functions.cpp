@@ -22,11 +22,11 @@ void polcontract::add_liquidity(){
   if(pool_wax == 0 && pool_lswax == 0){
     pool_ratio = (double) 1;
   } else {
-    pool_ratio = (double)pool_wax / (double)pool_lswax;
+    pool_ratio = safeDivDouble( (double)pool_wax, (double)pool_lswax );
   }
 
   //Maximum possible based on buckets
-  double max_wax_possible = (double) s.wax_bucket.amount / pool_ratio;
+  double max_wax_possible = safeDivDouble( (double) s.wax_bucket.amount, pool_ratio );
   double max_lswax_possible = (double) s.lswax_bucket.amount;
 
   //Determine the limiting factor
@@ -34,20 +34,20 @@ void polcontract::add_liquidity(){
   if (max_wax_possible <= max_lswax_possible) {
       //WAX is the limiting factor
       wax_to_add = (double) s.wax_bucket.amount;
-      lswax_to_add = wax_to_add / pool_ratio;
+      lswax_to_add = safeDivDouble( wax_to_add, pool_ratio );
   } else {
       //LSWAX is the limiting factor
       lswax_to_add = (double) s.lswax_bucket.amount;
-      wax_to_add = lswax_to_add * pool_ratio;
+      wax_to_add = safeMulDouble( lswax_to_add, pool_ratio );
   }
 
-  eosio::asset wax_to_add_asset = asset((int64_t)wax_to_add, WAX_SYMBOL);
-  double tokenAMinDouble = wax_to_add * 0.99;
-  eosio::asset tokenAMinAsset = asset((int64_t) tokenAMinDouble, WAX_SYMBOL);
+  eosio::asset wax_to_add_asset = asset( (int64_t)wax_to_add, WAX_SYMBOL );
+  double tokenAMinDouble = safeMulDouble( wax_to_add, (double) 0.99 );
+  eosio::asset tokenAMinAsset = asset( (int64_t) tokenAMinDouble, WAX_SYMBOL );
 
-  eosio::asset lswax_to_add_asset = asset((int64_t)lswax_to_add, LSWAX_SYMBOL);
-  double tokenBMinDouble = lswax_to_add * 0.99;
-  eosio::asset tokenBMinAsset = asset((int64_t) tokenBMinDouble, LSWAX_SYMBOL);
+  eosio::asset lswax_to_add_asset = asset( (int64_t)lswax_to_add, LSWAX_SYMBOL );
+  double tokenBMinDouble = safeMulDouble( lswax_to_add, (double) 0.99 );
+  eosio::asset tokenBMinAsset = asset( (int64_t) tokenBMinDouble, LSWAX_SYMBOL );
 
 
   //debit the amounts from wax bucket and lswax bucket

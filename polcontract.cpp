@@ -79,26 +79,6 @@ ACTION polcontract::clearexpired(const int& limit)
     }
 
     check( count > 0, "no expired rentals to clear" );
-
-    /* old logic */
-    /*
-	for(auto itr = expires_lower; itr != expires_upper; itr ++){
-		if( count == limit ) break;
-		//double check in case the itr is not in a valid range
-		if( itr->expires < now() && itr->expires != 0 ){
-			//undelegatebw from the receiver
-			action(permission_level{get_self(), "active"_n}, SYSTEM_CONTRACT,"undelegatebw"_n,std::tuple{ get_self(), itr->rent_to_account, ZERO_WAX, itr->amount_staked}).send();
-
-			//erase the row
-			itr = expires_idx.erase( itr );
-
-		} else {
-			break;
-		}
-
-		count ++;
-	}
-	*/
 }
 
 ACTION polcontract::initstate(){
