@@ -109,6 +109,7 @@ void polcontract::update_state(){
 
 	if( now() >= s.next_day_end_time ){
 		s.next_day_end_time += SECONDS_PER_DAY;
+    state_s.set(s, _self);
 	}
 }
 

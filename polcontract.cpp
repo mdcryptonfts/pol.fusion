@@ -134,3 +134,13 @@ ACTION polcontract::setrentprice(const eosio::asset& cost_to_rent_1_wax){
 	s.cost_to_rent_1_wax = cost_to_rent_1_wax;
 	state_s.set(s, _self);
 }
+
+/**
+* sync
+* updates the next_day_end_time in the state singleton 
+* to make sure CPU rentals are timed properly 
+*/ 
+
+ACTION polcontract::sync(){
+	update_state();
+}
