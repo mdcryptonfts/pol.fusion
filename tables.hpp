@@ -1,5 +1,14 @@
 #pragma once
 
+struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] config {
+  double      liquidity_allocation;
+  double      rental_pool_allocation;
+
+  EOSLIB_SERIALIZE(config, (liquidity_allocation)
+                          (rental_pool_allocation)
+                          )
+};
+using config_singleton = eosio::singleton<"config"_n, config>;
 
 // Every user 'from' has a scope/table that uses every recipient 'to' as the primary key.
 struct [[eosio::table]] delegated_bandwidth {

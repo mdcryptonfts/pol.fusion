@@ -21,17 +21,19 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         //do we need to check the sender to make sure its the dapp contract?
 
         state s = state_s.get();
+        config c = config_s.get();
 
         double amount_received_double = (double) quantity.amount;
+        double half_of_liquidity_allocation = safeDivDouble( c.liquidity_allocation, (double) 2 );
 
-        //40% should go into the wax bucket
-        double wax_bucket_allocation = safeMulDouble( (double) amount_received_double, (double) 0.4 );
+        double wax_bucket_allocation = safeMulDouble( (double) amount_received_double, half_of_liquidity_allocation );
+        double buy_lswax_allocation = safeMulDouble( (double) amount_received_double, half_of_liquidity_allocation );
+        double rental_pool_allocation = safeMulDouble( (double) amount_received_double, c.rental_pool_allocation );
 
-        //40% should be used for buying LSWAX (which gets sent back and added to LSWAX bucket)
-        double buy_lswax_allocation = safeMulDouble( (double) amount_received_double, (double) 0.4 );
-
-        //20% should go directly to available_for_rentals
-        double rental_pool_allocation = safeMulDouble( (double) amount_received_double, (double) 0.2 );
+        //safety checks
+        int64_t check_1 = safeAddInt64( (int64_t) wax_bucket_allocation, (int64_t) rental_pool_allocation );
+        int64_t check_2 = safeAddInt64( (int64_t) check_1, (int64_t) buy_lswax_allocation );
+        check( check_2 <= quantity.amount, "overallocation of funds" );
 
         s.wax_available_for_rentals.amount = safeAddInt64( s.wax_available_for_rentals.amount, (int64_t) rental_pool_allocation );
         s.wax_bucket.amount = safeAddInt64( s.wax_bucket.amount, (int64_t) wax_bucket_allocation );

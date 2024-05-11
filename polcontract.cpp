@@ -81,6 +81,19 @@ ACTION polcontract::clearexpired(const int& limit)
     check( count > 0, "no expired rentals to clear" );
 }
 
+ACTION polcontract::initconfig(){
+	require_auth(_self);
+	eosio::check(!config_s.exists(), "config already exists");
+
+	double one_seventh = safeDivDouble( (double) 1, (double) 7 );
+	double liquidity_allocation = (double) 1 - one_seventh;
+
+	config c{};
+	c.liquidity_allocation = liquidity_allocation;
+	c.rental_pool_allocation = one_seventh;
+	config_s.set(c, _self);
+}
+
 ACTION polcontract::initstate(){
 	require_auth(_self);
 	eosio::check(!state_s.exists(), "state already exists");
