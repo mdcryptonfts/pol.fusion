@@ -110,6 +110,35 @@ ACTION polcontract::initstate(){
 }
 
 /**
+* rebalance
+* can be called by anyone
+* if the lswax_bucket is empty, and the wax_bucket has more than 100 wax,
+* that wax_bucket is just sitting there for no reason
+* half of it should be converted to lsWAX for the next liquidity addition
+*/
+
+ACTION polcontract::rebalance(){
+	update_state();
+	state s = state_s.get();
+
+	bool need_to_rebalance = false;
+
+	if( s.wax_bucket > asset( 10000000000, WAX_SYMBOL) && s.lswax_bucket == ZERO_LSWAX ){
+		need_to_rebalance = true;
+
+        double buy_lswax_allocation = safeMulDouble( (double) s.wax_bucket.amount, (double) 0.5 );
+        s.wax_bucket.amount = safeSubInt64( s.wax_bucket.amount, (int64_t) buy_lswax_allocation );
+        state_s.set(s, _self);
+
+        transfer_tokens( DAPP_CONTRACT, asset((int64_t) buy_lswax_allocation, WAX_SYMBOL), WAX_CONTRACT, std::string("wax_lswax_liquidity") );
+	}
+
+	if(!need_to_rebalance){
+		check(false, "nothing to rebalance");
+	}
+}
+
+/**
 * rentcpu
 * to announce a rental and create a table row if it doesnt exist yet
 * user is the ram payer on the row

@@ -40,6 +40,7 @@ CONTRACT polcontract : public contract {
 		ACTION clearexpired(const int& limit);
 		ACTION initconfig();
 		ACTION initstate();
+		ACTION rebalance();
 		ACTION rentcpu(const eosio::name& renter, const eosio::name& cpu_receiver);
 		ACTION setrentprice(const eosio::asset& cost_to_rent_1_wax);
 		ACTION sync();
