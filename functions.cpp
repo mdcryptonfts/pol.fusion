@@ -11,8 +11,6 @@ void polcontract::add_liquidity(){
 
   /* TODO: create mainnet pool and change poolId for mainnet below */
 
-  /* TODO: what to do with wax_bucket when it has a bunch of wax and no matching lsWAX? */
-
   uint64_t poolId = TESTNET ? 2 : 69420;
   auto itr = pools_t.require_find( poolId, ("could not locate pool id " + std::to_string(poolId) ).c_str() );
 

@@ -57,8 +57,14 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
     	check( from == "eosio.stake"_n, "unstakes should come from eosio.stake" );
 
         state s = state_s.get();
+        state2 s2 = state_s_2.get();
+
         s.wax_available_for_rentals.amount = safeAddInt64( s.wax_available_for_rentals.amount, quantity.amount );
+        
+        s2.pending_refunds.amount = safeSubInt64( s2.pending_refunds.amount, quantity.amount );
+
         state_s.set(s, _self);
+        state_s_2.set(s2, _self);
 
     	return;    	
     }
@@ -109,6 +115,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         check( words.size() >= 5, "memo for rent_cpu operation is incomplete" );
 
         state s = state_s.get();
+        state2 s2 = state_s_2.get();
 
         double profit_made = (double) quantity.amount;
 
@@ -138,6 +145,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         //debit the wax from the rental pool
         s.wax_available_for_rentals.amount = safeSubInt64(s.wax_available_for_rentals.amount, amount_to_rent_with_precision);
+        s2.wax_allocated_to_rentals.amount = safeAddInt64(s2.wax_allocated_to_rentals.amount, amount_to_rent_with_precision);
 
         double pre_expected_amount_received = safeMulDouble( (double) s.cost_to_rent_1_wax.amount, (double) wax_amount_to_rent );
 
@@ -175,6 +183,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         //update the state
         state_s.set(s, _self);
+        state_s_2.set(s2, _self);
         update_votes();
         return;
     }    
@@ -243,6 +252,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
     if( words[1] == "increase_rental" ){
         check( tkcontract == WAX_CONTRACT, "only WAX can be sent with this memo" );
         state s = state_s.get();
+        state2 s2 = state_s_2.get();
         check( words.size() >= 4, "memo for increase_rental operation is incomplete" );
 
         double profit_made = (double) quantity.amount;
@@ -283,6 +293,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         //debit the wax from the rental pool
         s.wax_available_for_rentals.amount = safeSubInt64(s.wax_available_for_rentals.amount, amount_to_rent_with_precision);
+        s2.wax_allocated_to_rentals.amount = safeAddInt64(s2.wax_allocated_to_rentals.amount, amount_to_rent_with_precision);
 
         double pre_expected_amount_received = safeMulDouble( (double) s.cost_to_rent_1_wax.amount, (double) wax_amount_to_rent );
         double expected_amount_received = safeMulDouble( pre_expected_amount_received, days_to_rent ); 
@@ -317,6 +328,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         //update the state
         state_s.set(s, _self);
+        state_s_2.set(s2, _self);
         update_votes();
         return;
     }

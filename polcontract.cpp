@@ -35,6 +35,7 @@ ACTION polcontract::claimrefund()
 ACTION polcontract::clearexpired(const int& limit)
 {
 	update_state();
+	state2 s2 = state_s_2.get();
 
 	//see if there is a pending refund for us in the refunds table
 	auto refund_itr = refunds_t.find( get_self().value );
@@ -69,6 +70,9 @@ ACTION polcontract::clearexpired(const int& limit)
     while (itr != expires_upper) {
     	if( count == limit ) break;
 		if( itr->expires < now() && itr->expires != 0 ){
+			s2.wax_allocated_to_rentals.amount = safeSubInt64( s2.wax_allocated_to_rentals.amount, itr->amount_staked.amount );
+			s2.pending_refunds.amount = safeAddInt64( s2.pending_refunds.amount, itr->amount_staked.amount );
+
 			//undelegatebw from the receiver
 			action(permission_level{get_self(), "active"_n}, SYSTEM_CONTRACT,"undelegatebw"_n,std::tuple{ get_self(), itr->rent_to_account, ZERO_WAX, itr->amount_staked}).send();
 			itr = expires_idx.erase( itr );
@@ -79,6 +83,7 @@ ACTION polcontract::clearexpired(const int& limit)
     }
 
     check( count > 0, "no expired rentals to clear" );
+    state_s_2.set(s2, _self);
 }
 
 ACTION polcontract::initconfig(){
@@ -107,6 +112,22 @@ ACTION polcontract::initstate(){
 	s.lswax_bucket = ZERO_LSWAX;
 	s.last_liquidity_addition_time = 0;
 	state_s.set(s, _self);
+}
+
+ACTION polcontract::initstate2(){
+	require_auth(_self);
+	eosio::check(!state_s_2.exists(), "state already exists");
+
+	eosio::asset wax_allocated_to_rentals = ZERO_WAX;
+
+	for(auto itr = renters_t.begin(); itr != renters_t.end(); itr ++){
+		wax_allocated_to_rentals.amount = safeAddInt64(wax_allocated_to_rentals.amount, itr->amount_staked.amount);
+	}
+
+	state2 s2{};
+	s2.wax_allocated_to_rentals = wax_allocated_to_rentals;
+	s2.pending_refunds = ZERO_WAX;
+	state_s_2.set(s2, _self);
 }
 
 /**
@@ -164,6 +185,19 @@ ACTION polcontract::rentcpu(const eosio::name& renter, const eosio::name& cpu_re
 			_r.expires = 0; 		
 		});
 	}
+}
+
+ACTION polcontract::setconfig(const double& liquidity_allocation_percent){
+	require_auth(_self);
+	eosio::check(config_s.exists(), "config doesnt exist");
+
+	//allow 1-100%
+	check( liquidity_allocation_percent >= (double) 0.01 && liquidity_allocation_percent <= (double) 1, "percent must be between > 0.01 && <= 1" );
+
+	config c{};
+	c.liquidity_allocation = liquidity_allocation_percent;
+	c.rental_pool_allocation = (double) 1 - liquidity_allocation_percent;
+	config_s.set(c, _self);
 }
 
 ACTION polcontract::setrentprice(const eosio::asset& cost_to_rent_1_wax){

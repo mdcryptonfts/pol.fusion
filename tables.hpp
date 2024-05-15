@@ -116,6 +116,18 @@ struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] state {
 using state_singleton = eosio::singleton<"state"_n, state>;
 
 
+struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] state2 {
+  eosio::asset      wax_allocated_to_rentals;
+  eosio::asset      pending_refunds;
+
+
+  EOSLIB_SERIALIZE(state2,  (wax_allocated_to_rentals)
+                            (pending_refunds)
+                          )
+};
+using state_singleton_2 = eosio::singleton<"state2"_n, state2>;
+
+
 struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] top21 {
   std::vector<eosio::name>    block_producers;
   uint64_t                    last_update;

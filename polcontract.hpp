@@ -30,6 +30,7 @@ CONTRACT polcontract : public contract {
 		contract(receiver, code, ds),
 		config_s(receiver, receiver.value),
 		state_s(receiver, receiver.value),
+		state_s_2(receiver, receiver.value),
 		top21_s(DAPP_CONTRACT, DAPP_CONTRACT.value)
 		{}
 
@@ -40,8 +41,10 @@ CONTRACT polcontract : public contract {
 		ACTION clearexpired(const int& limit);
 		ACTION initconfig();
 		ACTION initstate();
+		ACTION initstate2();
 		ACTION rebalance();
 		ACTION rentcpu(const eosio::name& renter, const eosio::name& cpu_receiver);
+		ACTION setconfig(const double& liquidity_allocation_percent);
 		ACTION setrentprice(const eosio::asset& cost_to_rent_1_wax);
 		ACTION sync();
 
@@ -55,6 +58,7 @@ CONTRACT polcontract : public contract {
 		//Singletons
 		config_singleton config_s;
 		state_singleton state_s;
+		state_singleton_2 state_s_2;
 		top21_singleton top21_s;
 
 		//Multi Index Tables
