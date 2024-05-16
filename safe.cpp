@@ -14,31 +14,28 @@ int64_t polcontract::safeAddInt64(const int64_t& a, const int64_t& b){
 	return combinedValue;
 }
 
-double polcontract::safeDivDouble(const double& a, const double& b){
-	if(b == 0){
-		check( false, "cant divide double by 0" );
+int64_t polcontract::safeDivInt64(const int64_t& a, const int64_t& b){
+	if( b == 0 ){
+		check( false, "cant divide by 0" );
 	}
 
 	return a / b;
 }
 
-double polcontract::safeMulDouble(const double& a, const double& b){
 
-	if(a < (double) 0.0 || b < (double) 0.0){
-		check(false, "negative input for multiplication");
-	}
-    
-    if (a == (double) 0.0 || b == (double) 0.0 ) return (double) 0.0;
+uint128_t polcontract::safeMulUInt128(const uint128_t& a, const uint128_t& b){
 
-    if( a > (double) MAX_ASSET_AMOUNT_U64 || b > (double) MAX_ASSET_AMOUNT_U64 ){
-    	check( false, "double multiplication input is outside of range" );
-    }    
+    if( a == 0 || b == 0 ) return 0;
 
-    check( a <= (double) MAX_ASSET_AMOUNT_U64 / b, "double multiplication would result in overflow" );
+    if( a > (uint128_t) MAX_ASSET_AMOUNT_U64 || b > (uint128_t) MAX_ASSET_AMOUNT_U64 ){
+    	check( false, "uint128_t multiplication input is outside of range" );
+    }
 
-    double result = a * b;
+    check( a <= MAX_U128_VALUE / b, "uint128_t multiplication would result in overflow" );
 
-    check( result <= (double) MAX_ASSET_AMOUNT_U64, "multiplication result is outside of the acceptable range" );
+    uint128_t result = a * b;
+
+    check( result <= MAX_U128_VALUE, "uint128_t multiplication result is outside of the acceptable range" );
 
     return result;
 }

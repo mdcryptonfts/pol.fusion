@@ -1,14 +1,16 @@
 #pragma once
 
-struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] config {
-  double      liquidity_allocation;
-  double      rental_pool_allocation;
+struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] config2 {
+  uint64_t      liquidity_allocation_1e6;
+  uint64_t      rental_pool_allocation_1e6;
+  uint64_t      lswax_wax_pool_id;
 
-  EOSLIB_SERIALIZE(config, (liquidity_allocation)
-                          (rental_pool_allocation)
+  EOSLIB_SERIALIZE(config2, (liquidity_allocation_1e6)
+                          (rental_pool_allocation_1e6)
+                          (lswax_wax_pool_id)
                           )
 };
-using config_singleton = eosio::singleton<"config"_n, config>;
+using config_singleton_2 = eosio::singleton<"config2"_n, config2>;
 
 // Every user 'from' has a scope/table that uses every recipient 'to' as the primary key.
 struct [[eosio::table]] delegated_bandwidth {
@@ -128,7 +130,7 @@ struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] state2 {
 using state_singleton_2 = eosio::singleton<"state2"_n, state2>;
 
 
-struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] top21 {
+struct [[eosio::table]] top21 {
   std::vector<eosio::name>    block_producers;
   uint64_t                    last_update;
 

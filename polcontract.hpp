@@ -28,7 +28,7 @@ CONTRACT polcontract : public contract {
 		using contract::contract;
 		polcontract(name receiver, name code, datastream<const char *> ds):
 		contract(receiver, code, ds),
-		config_s(receiver, receiver.value),
+		config_s_2(receiver, receiver.value),
 		state_s(receiver, receiver.value),
 		state_s_2(receiver, receiver.value),
 		top21_s(DAPP_CONTRACT, DAPP_CONTRACT.value)
@@ -44,7 +44,7 @@ CONTRACT polcontract : public contract {
 		ACTION initstate2();
 		ACTION rebalance();
 		ACTION rentcpu(const eosio::name& renter, const eosio::name& cpu_receiver);
-		ACTION setconfig(const double& liquidity_allocation_percent);
+		ACTION setallocs(const uint64_t& liquidity_allocation_percent_1e6);
 		ACTION setrentprice(const eosio::asset& cost_to_rent_1_wax);
 		ACTION sync();
 
@@ -56,7 +56,7 @@ CONTRACT polcontract : public contract {
 	private:
 
 		//Singletons
-		config_singleton config_s;
+		config_singleton_2 config_s_2;
 		state_singleton state_s;
 		state_singleton_2 state_s_2;
 		top21_singleton top21_s;
@@ -69,16 +69,23 @@ CONTRACT polcontract : public contract {
 
 		//Functions
 		void add_liquidity();
+		int64_t calculate_asset_share(const int64_t& quantity, const uint64_t& percentage);
+		int64_t cpu_rental_price(const uint64_t& days, const int64_t& price_per_day, const int64_t& amount);
+		int64_t cpu_rental_price_from_seconds(const uint64_t& seconds, const int64_t& price_per_day, const int64_t& amount);
+		uint64_t days_to_seconds(const uint64_t& days);
+		uint128_t pool_ratio_1e18(const int64_t& wax_amount, const int64_t& lswax_amount);
 		std::vector<std::string> get_words(std::string memo);
 		uint64_t now();
+		uint128_t seconds_to_days_1e6(const uint64_t& seconds);
 		void transfer_tokens(const name& user, const asset& amount_to_send, const name& contract, const std::string& memo);
 		void update_state();
 		void update_votes();
+		void validate_allocations(const int64_t& quantity, const int64_t& lswax_alloc, const int64_t& wax_alloc, const int64_t& rental_alloc);
 
 		//Safemath
 		int64_t safeAddInt64(const int64_t& a, const int64_t& b);
-		double safeDivDouble(const double& a, const double& b);
-		double safeMulDouble(const double& a, const double& b);
+		int64_t safeDivInt64(const int64_t& a, const int64_t& b);
+		uint128_t safeMulUInt128(const uint128_t& a, const uint128_t& b);
 		uint64_t safeMulUInt64(const uint64_t& a, const uint64_t& b);
 		int64_t safeSubInt64(const int64_t& a, const int64_t& b);
 

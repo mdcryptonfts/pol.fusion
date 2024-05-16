@@ -3,6 +3,11 @@
 //Numeric Limits
 static constexpr int64_t MAX_ASSET_AMOUNT = 4611686018427387903;
 static constexpr uint64_t MAX_ASSET_AMOUNT_U64 = 4611686018427387903;
+static constexpr uint128_t SCALE_FACTOR_1E6 = 1000000;
+static constexpr uint128_t SCALE_FACTOR_1E8 = 100000000;
+static constexpr uint128_t SCALE_FACTOR_1E12 = 1000000000000;
+static constexpr uint128_t SCALE_FACTOR_1E18 = 1000000000000000000;
+static constexpr uint128_t MAX_U128_VALUE = (static_cast<uint128_t>(1) << 127) + ((static_cast<uint128_t>(1) << 127) - 1);
 
 //Symbols
 static constexpr eosio::symbol LSWAX_SYMBOL = eosio::symbol("LSWAX", 8);
@@ -20,9 +25,10 @@ static const eosio::asset ZERO_LSWAX = eosio::asset(0, LSWAX_SYMBOL);
 static const eosio::asset ZERO_WAX = eosio::asset(0, WAX_SYMBOL);
 
 //Other
+static constexpr uint64_t ONE_HUNDRED_PERCENT_1E6 = 100000000;
 static constexpr uint64_t MAXIMUM_CPU_RENTAL_DAYS = 365 * 10; /* 10 years */
-static constexpr uint64_t MAXIMUM_WAX_TO_RENT = 10000000; /* 10 Million WAX */
+static constexpr uint64_t MAXIMUM_WAX_TO_RENT = 1000000000000000; /* 10 Million WAX */
 static constexpr uint64_t MINIMUM_CPU_RENTAL_DAYS = TESTNET ? 1 : 30; /* 1 Month */
-static constexpr uint64_t MINIMUM_WAX_TO_INCREASE = TESTNET ? 5 : 100;
-static constexpr uint64_t MINIMUM_WAX_TO_RENT = TESTNET ? 10 : 500;
+static constexpr uint64_t MINIMUM_WAX_TO_INCREASE = TESTNET ? 500000000 : 10000000000; /* 5 or 100 */
+static constexpr uint64_t MINIMUM_WAX_TO_RENT = TESTNET ? 1000000000 : 50000000000; /* 10 or 500 */
 static constexpr uint64_t SECONDS_PER_DAY = 86400;

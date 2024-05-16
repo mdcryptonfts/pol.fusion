@@ -2,6 +2,7 @@
 
 #include "polcontract.hpp"
 #include "functions.cpp"
+#include "integer_functions.cpp"
 #include "on_notify.cpp"
 #include "safe.cpp"
 
@@ -87,16 +88,18 @@ ACTION polcontract::clearexpired(const int& limit)
 }
 
 ACTION polcontract::initconfig(){
-	require_auth(_self);
-	eosio::check(!config_s.exists(), "config already exists");
+	require_auth( _self );
 
-	double one_seventh = safeDivDouble( (double) 1, (double) 7 );
-	double liquidity_allocation = (double) 1 - one_seventh;
+	eosio::check( !config_s_2.exists(), "config2 already exists" );
 
-	config c{};
-	c.liquidity_allocation = liquidity_allocation;
-	c.rental_pool_allocation = one_seventh;
-	config_s.set(c, _self);
+	uint64_t rental_pool_allocation_1e6 = 14285714; //14.28% or 1/7th
+	uint64_t liquidity_allocation_1e6 = ONE_HUNDRED_PERCENT_1E6 - rental_pool_allocation_1e6;
+
+	config2 c{};
+	c.liquidity_allocation_1e6 = liquidity_allocation_1e6;
+	c.rental_pool_allocation_1e6 = rental_pool_allocation_1e6;
+	c.lswax_wax_pool_id = TESTNET ? 2 : 9999999; //TODO change this when pair is created
+	config_s_2.set(c, _self);
 }
 
 ACTION polcontract::initstate(){
@@ -147,11 +150,11 @@ ACTION polcontract::rebalance(){
 	if( s.wax_bucket > asset( 10000000000, WAX_SYMBOL) && s.lswax_bucket == ZERO_LSWAX ){
 		need_to_rebalance = true;
 
-        double buy_lswax_allocation = safeMulDouble( (double) s.wax_bucket.amount, (double) 0.5 );
-        s.wax_bucket.amount = safeSubInt64( s.wax_bucket.amount, (int64_t) buy_lswax_allocation );
+        int64_t buy_lswax_allocation = calculate_asset_share( s.wax_bucket.amount, 50000000 );
+        s.wax_bucket.amount = safeSubInt64( s.wax_bucket.amount, buy_lswax_allocation );
         state_s.set(s, _self);
 
-        transfer_tokens( DAPP_CONTRACT, asset((int64_t) buy_lswax_allocation, WAX_SYMBOL), WAX_CONTRACT, std::string("wax_lswax_liquidity") );
+        transfer_tokens( DAPP_CONTRACT, asset( buy_lswax_allocation, WAX_SYMBOL ), WAX_CONTRACT, std::string("wax_lswax_liquidity") );
 	}
 
 	if(!need_to_rebalance){
@@ -187,17 +190,18 @@ ACTION polcontract::rentcpu(const eosio::name& renter, const eosio::name& cpu_re
 	}
 }
 
-ACTION polcontract::setconfig(const double& liquidity_allocation_percent){
-	require_auth(_self);
-	eosio::check(config_s.exists(), "config doesnt exist");
+ACTION polcontract::setallocs(const uint64_t& liquidity_allocation_percent_1e6){
+	require_auth( _self );
+	eosio::check(config_s_2.exists(), "config2 doesnt exist");
 
 	//allow 1-100%
-	check( liquidity_allocation_percent >= (double) 0.01 && liquidity_allocation_percent <= (double) 1, "percent must be between > 0.01 && <= 1" );
+	check( liquidity_allocation_percent_1e6 >= 1000000 && liquidity_allocation_percent_1e6 <= ONE_HUNDRED_PERCENT_1E6, "percent must be between > 1e6 && <= 100 * 1e6" );
 
-	config c{};
-	c.liquidity_allocation = liquidity_allocation_percent;
-	c.rental_pool_allocation = (double) 1 - liquidity_allocation_percent;
-	config_s.set(c, _self);
+
+	config2 c{};
+	c.liquidity_allocation_1e6 = liquidity_allocation_percent_1e6;
+	c.rental_pool_allocation_1e6 = ONE_HUNDRED_PERCENT_1E6 - liquidity_allocation_percent_1e6;
+	config_s_2.set(c, _self);
 }
 
 ACTION polcontract::setrentprice(const eosio::asset& cost_to_rent_1_wax){
