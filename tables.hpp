@@ -29,36 +29,6 @@ struct [[eosio::table]] delegated_bandwidth {
 
 typedef eosio::multi_index< "delband"_n, delegated_bandwidth > del_bandwidth_table;
 
-namespace alcor_contract {
-  struct CurrSlotS {
-    uint128_t     sqrtPriceX64;
-    int32_t       tick;
-    uint32_t      lastObservationTimestamp;
-    uint32_t      currentObservationNum;
-    uint32_t      maxObservationNum;
-  };
-
-  struct[[eosio::table]] pools_struct {
-    uint64_t                  id;
-    bool                      active;
-    eosio::extended_asset     tokenA;
-    eosio::extended_asset     tokenB;
-    uint32_t                  fee;
-    uint8_t                   feeProtocol;
-    int32_t                   tickSpacing;
-    uint64_t                  maxLiquidityPerTick;
-    CurrSlotS                 currSlot;
-    uint64_t                  feeGrowthGlobalAX64;
-    uint64_t                  feeGrowthGlobalBX64;
-    eosio::asset              protocolFeeA;
-    eosio::asset              protocolFeeB;
-    uint64_t                  liquidity;
-
-    uint64_t  primary_key()const { return id; }
-  };
-  typedef eosio::multi_index< "pools"_n, pools_struct> pools_table;
-}
-
 struct [[eosio::table]] refund_request {
   eosio::name             owner;
   eosio::time_point_sec   request_time;
@@ -97,37 +67,32 @@ eosio::indexed_by<"fromtocombo"_n, eosio::const_mem_fun<renters, uint128_t, &ren
 >;
 
 
-struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] state {
+struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] state3 {
   eosio::asset      wax_available_for_rentals;
   uint64_t          next_day_end_time;
   eosio::asset      cost_to_rent_1_wax;
   uint64_t          last_vote_time;
   eosio::asset      wax_bucket;
   eosio::asset      lswax_bucket;
-  uint64_t          last_liquidity_addition_time;
+  uint64_t          last_liquidity_addition_time;  
+  eosio::asset      wax_allocated_to_rentals;
+  eosio::asset      pending_refunds;
+  uint64_t          last_rebalance_time;
 
-  EOSLIB_SERIALIZE(state, (wax_available_for_rentals)
+  EOSLIB_SERIALIZE(state3,  
+                          (wax_available_for_rentals)
                           (next_day_end_time)
                           (cost_to_rent_1_wax)
                           (last_vote_time)
                           (wax_bucket)
                           (lswax_bucket)
                           (last_liquidity_addition_time)
+                          (wax_allocated_to_rentals)
+                          (pending_refunds)
+                          (last_rebalance_time)
                           )
 };
-using state_singleton = eosio::singleton<"state"_n, state>;
-
-
-struct [[eosio::table, eosio::contract(CONTRACT_NAME)]] state2 {
-  eosio::asset      wax_allocated_to_rentals;
-  eosio::asset      pending_refunds;
-
-
-  EOSLIB_SERIALIZE(state2,  (wax_allocated_to_rentals)
-                            (pending_refunds)
-                          )
-};
-using state_singleton_2 = eosio::singleton<"state2"_n, state2>;
+using state_singleton_3 = eosio::singleton<"state3"_n, state3>;
 
 
 struct [[eosio::table]] top21 {
