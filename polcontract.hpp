@@ -70,7 +70,7 @@ CONTRACT polcontract : public contract {
 
 
 		//Functions
-		void add_liquidity( state3 s, liquidity_struct lp_details );
+		void add_liquidity( state3& s, liquidity_struct& lp_details );
 		int64_t calculate_asset_share(const int64_t& quantity, const uint64_t& percentage);
 		uint128_t calculate_share_from_e18(const uint128_t& amount, const uint64_t& percentage);
 		int64_t cpu_rental_price(const uint64_t& days, const int64_t& price_per_day, const int64_t& amount);

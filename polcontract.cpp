@@ -150,7 +150,7 @@ ACTION polcontract::rebalance(){
     //since there is a 0.05% instant redemption fee for selling lswax to the protocol,
     //only allow rebalancing once per 24h to avoid any potential security issues
     //that could cause the protocol to lose funds
-    check( s.last_rebalance_time <= now() - SECONDS_PER_DAY, "can only rebalance once every 24 hours" );
+    //check( s.last_rebalance_time <= now() - SECONDS_PER_DAY, "can only rebalance once every 24 hours" );
 
     liquidity_struct lp_details = get_liquidity_info( c, ds );
 

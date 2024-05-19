@@ -1,7 +1,7 @@
 #pragma once
 
 
-void polcontract::add_liquidity( state3 s, liquidity_struct lp_details ){
+void polcontract::add_liquidity( state3& s, liquidity_struct& lp_details ){
 
   //Maximum possible based on buckets
   uint128_t max_wax_possible = safeMulUInt128( (uint128_t) s.wax_bucket.amount, SCALE_FACTOR_1E18 ) / lp_details.alcors_lswax_price;
