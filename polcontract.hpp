@@ -80,8 +80,8 @@ CONTRACT polcontract : public contract {
 		uint128_t pool_ratio_1e18(const int64_t& wax_amount, const int64_t& lswax_amount);
 		int64_t internal_liquify(const int64_t& quantity, dapp_tables::state s);
 		int64_t internal_unliquify(const int64_t& quantity, dapp_tables::state s);
-		std::vector<std::string> get_words(std::string memo);
 		uint64_t now();
+		std::vector<std::string> parse_memo(std::string memo);
 		uint128_t seconds_to_days_1e6(const uint64_t& seconds);
 		void transfer_tokens(const name& user, const asset& amount_to_send, const name& contract, const std::string& memo);
 		void update_state();

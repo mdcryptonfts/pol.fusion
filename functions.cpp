@@ -144,7 +144,11 @@ liquidity_struct polcontract::get_liquidity_info(config2 c, dapp_tables::state d
 
 }
 
-std::vector<std::string> polcontract::get_words(std::string memo){
+uint64_t polcontract::now(){
+  return current_time_point().sec_since_epoch();
+}
+
+std::vector<std::string> polcontract::parse_memo(std::string memo){
   std::string delim = "|";
   std::vector<std::string> words{};
   size_t pos = 0;
@@ -153,10 +157,6 @@ std::vector<std::string> polcontract::get_words(std::string memo){
     memo.erase(0, pos + delim.length());
   }
   return words;
-}
-
-uint64_t polcontract::now(){
-  return current_time_point().sec_since_epoch();
 }
 
 uint128_t polcontract::seconds_to_days_1e6(const uint64_t& seconds){
@@ -173,10 +173,17 @@ void polcontract::update_state(){
 	state3 s = state_s_3.get();
 
 	if( now() >= s.next_day_end_time ){
-		s.next_day_end_time += SECONDS_PER_DAY;
+
+    //calculate the amount of days that have passed
+    //this is the equivalent of using ceil(), but with integers rather
+    //than needing to use doubles
+    uint64_t days_passed = ( now() - s.next_day_end_time + SECONDS_PER_DAY - 1 ) / SECONDS_PER_DAY;
+
+		s.next_day_end_time += days_to_seconds( days_passed );
     state_s_3.set(s, _self);
 	}
 }
+
 
 void polcontract::update_votes(){
   state3 s = state_s_3.get();

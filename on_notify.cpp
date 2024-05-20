@@ -3,7 +3,7 @@
 void polcontract::receive_wax_transfer(const name& from, const name& to, const asset& quantity, const std::string& memo){
 	const name tkcontract = get_first_receiver();
 
-    if(quantity.amount <= 0) return;
+    check( quantity.amount > 0, "Must send a positive quantity" );
 
     check( quantity.amount < MAX_ASSET_AMOUNT, "quantity too large" );
 
@@ -139,7 +139,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
             uint128_t intermediate_result = liquidity_allocation_e18 / sum_of_alcor_and_real_price;
 
             //Multiply intermediate_result by real_lswax_price to determine how much wax to spend
-            uint128_t lswax_alloc_128 = safeMulUInt128( intermediate_result, lp_details.real_lswax_price );
+            uint128_t lswax_alloc_128 = safeMulUInt128( intermediate_result, lp_details.real_lswax_price ) / SCALE_FACTOR_1E18;
 
             buy_lswax_allocation = (int64_t) lswax_alloc_128;
             wax_bucket_allocation = safeSubInt64( liquidity_allocation, buy_lswax_allocation );
@@ -174,7 +174,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         return;           
     }    
 
-    std::vector<std::string> words = get_words(memo);
+    std::vector<std::string> words = parse_memo( memo );
 
     if( words[1] == "rent_cpu" ){
         check( tkcontract == WAX_CONTRACT, "only WAX can be sent with this memo" );
@@ -383,7 +383,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 void polcontract::receive_lswax_transfer(const name& from, const name& to, const asset& quantity, const std::string& memo){
     const name tkcontract = get_first_receiver();
 
-    check( quantity.amount > 0, "Must redeem a positive quantity" );
+    check( quantity.amount > 0, "Must send a positive quantity" );
     check( quantity.amount < MAX_ASSET_AMOUNT, "quantity too large" );
 
     if( from == get_self() || to != get_self() ){
@@ -391,9 +391,6 @@ void polcontract::receive_lswax_transfer(const name& from, const name& to, const
     }
 
     check( quantity.symbol == LSWAX_SYMBOL, "was expecting LSWAX token" );
-
-    //redundant check which isnt necessary when not using catchall notification handler
-    check( tkcontract == TOKEN_CONTRACT, "first receiver should be token.fusion" );
 
     update_state();
 

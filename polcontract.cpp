@@ -109,7 +109,7 @@ ACTION polcontract::initconfig(){
 
 
 ACTION polcontract::initstate3(){
-	require_auth(_self);
+	require_auth( _self );
 	eosio::check(!state_s_3.exists(), "state3 already exists");
 
 	state3 s{};
