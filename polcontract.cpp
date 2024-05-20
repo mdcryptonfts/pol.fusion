@@ -48,13 +48,21 @@ ACTION polcontract::clearexpired(const int& limit)
 
 	if(refund_itr != refunds_t.end()){
 		bool shouldContinue = false;
-		/* the refund is less than 5 mins old, proceed */
-		if( now() - (5 * 60) < (uint64_t) refund_itr->request_time.sec_since_epoch() ){
+
+		/** the refund is less than 5 mins old, proceed
+		 *  the reason for this is that once we have refunds pending for any significant
+		 *  amount of time, we don't want to reset the timer on the refund request
+		 * 	by submitting a new unstake request.
+		 *  however, we may need to submit multiple unstake requests in a short period
+		 *  of time (for example if there are 100k accounts that we are renting to)
+		 *  this allows us to break up unstake requests into multiple batches if needed
+		 */
+		if( now() - (5 * 60) < uint64_t(refund_itr->request_time.sec_since_epoch()) ){
 			shouldContinue = true;
 		}
 
 		/* the refund is > 3 days old, claim it and proceed */
-		else if( now() - (60 * 60 * 24 * 3) > (uint64_t) refund_itr->request_time.sec_since_epoch()){
+		else if( now() - (60 * 60 * 24 * 3) > uint64_t(refund_itr->request_time.sec_since_epoch()) ){
 			action(permission_level{get_self(), "active"_n}, SYSTEM_CONTRACT,"refund"_n,std::tuple{ get_self() }).send();
 			shouldContinue = true;
 		}
@@ -65,18 +73,21 @@ ACTION polcontract::clearexpired(const int& limit)
 	//get expires index from renters table
 	auto expires_idx = renters_t.get_index<"expires"_n>();
 
-	//upper bound is 1 second ago, lower bound is 1 (to avoid paying for deletion of unfunded rentals)
+	//upper bound is 1 second ago, lower bound is 1 
+	//to avoid paying for deletion of unfunded rentals, which are set to expire at 0 by default
 	auto expires_lower = expires_idx.lower_bound( 1 );
 	auto expires_upper = expires_idx.upper_bound( now() - 1 );
 
 	int count = 0;
 
-	/* new logic */
     auto itr = expires_lower;
     while (itr != expires_upper) {
     	if( count == limit ) break;
 		if( itr->expires < now() && itr->expires != 0 ){
+			//this wax is no longer being allocated to a rental since we are about to unstake it
 			s.wax_allocated_to_rentals.amount = safeSubInt64( s.wax_allocated_to_rentals.amount, itr->amount_staked.amount );
+			
+			//update the pending refunds bucket so we can keep track of how much is coming in
 			s.pending_refunds.amount = safeAddInt64( s.pending_refunds.amount, itr->amount_staked.amount );
 
 			//undelegatebw from the receiver
@@ -103,7 +114,7 @@ ACTION polcontract::initconfig(){
 	config2 c{};
 	c.liquidity_allocation_1e6 = liquidity_allocation_1e6;
 	c.rental_pool_allocation_1e6 = rental_pool_allocation_1e6;
-	c.lswax_wax_pool_id = TESTNET ? 2 : 9999999; //TODO change this when pair is created
+	c.lswax_wax_pool_id = TESTNET ? 2 : 9999999; //TODO change this when pair is created on mainnet
 	config_s_2.set(c, _self);
 }
 
@@ -195,6 +206,7 @@ ACTION polcontract::rebalance(){
 		return;
 
     } else if( lp_details.is_in_range ) {
+    	//alcor's price is acceptable
 
     	if( s.wax_bucket > ZERO_WAX && s.lswax_bucket == ZERO_LSWAX ){
     		//we need to convert wax into lswax
@@ -397,17 +409,4 @@ ACTION polcontract::setrentprice(const eosio::asset& cost_to_rent_1_wax){
 	state3 s = state_s_3.get();
 	s.cost_to_rent_1_wax = cost_to_rent_1_wax;
 	state_s_3.set(s, _self);
-}
-
-/**
-* sync
-* updates the next_day_end_time in the state singleton 
-* to make sure CPU rentals are timed properly 
-* update_state is also called inline on any actions/functions
-* that would require it. but calling it here makes sure
-* that front ends have accurate information in between contract interactions
-*/ 
-
-ACTION polcontract::sync(){
-	update_state();
 }

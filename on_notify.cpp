@@ -38,7 +38,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         if( lp_details.is_in_range ){
 
-            uint128_t liquidity_allocation_e18 = safeMulUInt128( (uint128_t) liquidity_allocation, SCALE_FACTOR_1E18 );
+            uint128_t liquidity_allocation_e18 = safeMulUInt128( uint128_t(liquidity_allocation), SCALE_FACTOR_1E18 );
 
             //Divide liquidity_allocation_e18 by the sum of alcors_lswax_price and real_lswax_price
             uint128_t sum_of_alcor_and_real_price = lp_details.alcors_lswax_price + lp_details.real_lswax_price;
@@ -47,7 +47,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
             //Multiply intermediate_result by real_lswax_price to determine how much wax to spend
             uint128_t lswax_alloc_128 = safeMulUInt128( intermediate_result, lp_details.real_lswax_price );
 
-            buy_lswax_allocation = (int64_t) lswax_alloc_128;
+            buy_lswax_allocation = int64_t(lswax_alloc_128);
             wax_bucket_allocation = safeSubInt64( liquidity_allocation, buy_lswax_allocation );
 
             transfer_tokens( DAPP_CONTRACT, asset( buy_lswax_allocation, WAX_SYMBOL), WAX_CONTRACT, std::string("wax_lswax_liquidity") );
@@ -132,7 +132,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
 
         if( lp_details.is_in_range ){
 
-            uint128_t liquidity_allocation_e18 = safeMulUInt128( (uint128_t) liquidity_allocation, SCALE_FACTOR_1E18 );
+            uint128_t liquidity_allocation_e18 = safeMulUInt128( uint128_t(liquidity_allocation), SCALE_FACTOR_1E18 );
 
             //Divide liquidity_allocation_e18 by the sum of alcors_lswax_price and real_lswax_price
             uint128_t sum_of_alcor_and_real_price = lp_details.alcors_lswax_price + lp_details.real_lswax_price;
@@ -141,7 +141,7 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
             //Multiply intermediate_result by real_lswax_price to determine how much wax to spend
             uint128_t lswax_alloc_128 = safeMulUInt128( intermediate_result, lp_details.real_lswax_price ) / SCALE_FACTOR_1E18;
 
-            buy_lswax_allocation = (int64_t) lswax_alloc_128;
+            buy_lswax_allocation = int64_t(lswax_alloc_128);
             wax_bucket_allocation = safeSubInt64( liquidity_allocation, buy_lswax_allocation );
 
             transfer_tokens( DAPP_CONTRACT, asset( buy_lswax_allocation, WAX_SYMBOL), WAX_CONTRACT, std::string("wax_lswax_liquidity") );
@@ -202,23 +202,23 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
          *  we need to scale by 1e8 to get the correct number to create an asset
          */
 
-        const uint64_t wax_amount_to_rent = safeMulUInt64( std::strtoull( words[4].c_str(), NULL, 0 ), (uint64_t) SCALE_FACTOR_1E8 );
+        const uint64_t wax_amount_to_rent = safeMulUInt64( std::strtoull( words[4].c_str(), NULL, 0 ), uint64_t(SCALE_FACTOR_1E8) );
 
         check( itr->expires == 0 && itr->amount_staked.amount == 0, "memo for increasing/extending should start with extend_rental or increase_rental" );
         check( days_to_rent >= MINIMUM_CPU_RENTAL_DAYS, ( "minimum days to rent is " + std::to_string( MINIMUM_CPU_RENTAL_DAYS ) ).c_str() );
         check( days_to_rent <= MAXIMUM_CPU_RENTAL_DAYS, ( "maximum days to rent is " + std::to_string( MAXIMUM_CPU_RENTAL_DAYS ) ).c_str() );
 
-        check( wax_amount_to_rent >= MINIMUM_WAX_TO_RENT, ( "minimum wax amount to rent is " + asset( (int64_t) MINIMUM_WAX_TO_RENT, WAX_SYMBOL ).to_string() ).c_str() );
-        check( wax_amount_to_rent <= MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + asset( (int64_t) MAXIMUM_WAX_TO_RENT, WAX_SYMBOL ).to_string() ).c_str() );
+        check( wax_amount_to_rent >= MINIMUM_WAX_TO_RENT, ( "minimum wax amount to rent is " + asset( int64_t(MINIMUM_WAX_TO_RENT), WAX_SYMBOL ).to_string() ).c_str() );
+        check( wax_amount_to_rent <= MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + asset( int64_t(MAXIMUM_WAX_TO_RENT), WAX_SYMBOL ).to_string() ).c_str() );
 
         //make sure there is anough wax available for this rental
-        check( s.wax_available_for_rentals.amount >= (int64_t) wax_amount_to_rent, "there is not enough wax in the rental pool to cover this rental" );
+        check( s.wax_available_for_rentals.amount >= int64_t(wax_amount_to_rent), "there is not enough wax in the rental pool to cover this rental" );
 
         //debit the wax from the rental pool
-        s.wax_available_for_rentals.amount = safeSubInt64(s.wax_available_for_rentals.amount, (int64_t) wax_amount_to_rent);
-        s.wax_allocated_to_rentals.amount = safeAddInt64(s.wax_allocated_to_rentals.amount, (int64_t) wax_amount_to_rent);
+        s.wax_available_for_rentals.amount = safeSubInt64( s.wax_available_for_rentals.amount, int64_t(wax_amount_to_rent) );
+        s.wax_allocated_to_rentals.amount = safeAddInt64( s.wax_allocated_to_rentals.amount, int64_t(wax_amount_to_rent) );
 
-        int64_t amount_expected = cpu_rental_price( days_to_rent, s.cost_to_rent_1_wax.amount, (int64_t) wax_amount_to_rent );
+        int64_t amount_expected = cpu_rental_price( days_to_rent, s.cost_to_rent_1_wax.amount, int64_t(wax_amount_to_rent) );
         check( quantity.amount >= amount_expected, ("expected to receive " + asset( amount_expected, WAX_SYMBOL ).to_string() ).c_str() );
 
         //if they sent more than expected, calculate difference and refund it
@@ -232,11 +232,11 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         }        
 
         //stake cpu to the receiver
-        action(permission_level{get_self(), "active"_n}, "eosio"_n,"delegatebw"_n,std::tuple{ get_self(), cpu_receiver, asset( 0, WAX_SYMBOL ), asset( (int64_t) wax_amount_to_rent, WAX_SYMBOL ), false}).send();
+        action(permission_level{get_self(), "active"_n}, "eosio"_n,"delegatebw"_n,std::tuple{ get_self(), cpu_receiver, asset( 0, WAX_SYMBOL ), asset( int64_t(wax_amount_to_rent), WAX_SYMBOL ), false}).send();
 
         //update the renter row (amount staked and expires)
         renter_receiver_idx.modify(itr, same_payer, [&](auto &_r){
-            _r.amount_staked.amount = (int64_t) wax_amount_to_rent;
+            _r.amount_staked.amount = int64_t(wax_amount_to_rent);
             _r.expires = s.next_day_end_time + days_to_seconds( days_to_rent );
         });
 
@@ -330,13 +330,13 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         
         int64_t existing_rental_amount = itr->amount_staked.amount;
 
-        check( safeAddInt64( (int64_t) wax_amount_to_rent, (int64_t) existing_rental_amount ) <= (int64_t) MAXIMUM_WAX_TO_RENT, ( "maximum wax amount to rent is " + std::to_string( MAXIMUM_WAX_TO_RENT ) ).c_str() );
+        check( safeAddInt64( int64_t(wax_amount_to_rent), int64_t(existing_rental_amount) ) <= int64_t(MAXIMUM_WAX_TO_RENT), ( "maximum wax amount to rent is " + std::to_string( MAXIMUM_WAX_TO_RENT ) ).c_str() );
 
-        check( s.wax_available_for_rentals.amount >= (int64_t) wax_amount_to_rent, "there is not enough wax in the rental pool to cover this rental" );
+        check( s.wax_available_for_rentals.amount >= int64_t(wax_amount_to_rent), "there is not enough wax in the rental pool to cover this rental" );
 
         //debit the wax from the rental pool
-        s.wax_available_for_rentals.amount = safeSubInt64( s.wax_available_for_rentals.amount, (int64_t) wax_amount_to_rent );
-        s.wax_allocated_to_rentals.amount = safeAddInt64( s.wax_allocated_to_rentals.amount, (int64_t) wax_amount_to_rent );
+        s.wax_available_for_rentals.amount = safeSubInt64( s.wax_available_for_rentals.amount, int64_t(wax_amount_to_rent) );
+        s.wax_allocated_to_rentals.amount = safeAddInt64( s.wax_allocated_to_rentals.amount, int64_t(wax_amount_to_rent) );
 
         int64_t amount_expected = cpu_rental_price_from_seconds( seconds_remaining, s.cost_to_rent_1_wax.amount, wax_amount_to_rent );
 
@@ -353,11 +353,11 @@ void polcontract::receive_wax_transfer(const name& from, const name& to, const a
         }
 
         //stake cpu to the receiver
-        action(permission_level{get_self(), "active"_n}, "eosio"_n,"delegatebw"_n,std::tuple{ get_self(), cpu_receiver, asset( 0, WAX_SYMBOL ), asset( (int64_t) wax_amount_to_rent, WAX_SYMBOL ), false}).send();
+        action(permission_level{get_self(), "active"_n}, "eosio"_n,"delegatebw"_n,std::tuple{ get_self(), cpu_receiver, asset( 0, WAX_SYMBOL ), asset( int64_t(wax_amount_to_rent), WAX_SYMBOL ), false}).send();
 
         //update the renter row (amount staked and expires)
         renter_receiver_idx.modify(itr, same_payer, [&](auto &_r){
-            _r.amount_staked.amount = safeAddInt64( _r.amount_staked.amount, (int64_t) wax_amount_to_rent );
+            _r.amount_staked.amount = safeAddInt64( _r.amount_staked.amount, int64_t(wax_amount_to_rent) );
         });
 
         check( profit_made > 0, "error with rental cost calculation" );

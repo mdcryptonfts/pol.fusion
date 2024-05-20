@@ -4,18 +4,18 @@
 void polcontract::add_liquidity( state3& s, liquidity_struct& lp_details ){
 
   //Maximum possible based on buckets
-  uint128_t max_wax_possible = safeMulUInt128( (uint128_t) s.wax_bucket.amount, SCALE_FACTOR_1E18 ) / lp_details.alcors_lswax_price;
-  uint128_t max_lswax_possible = (uint128_t) s.lswax_bucket.amount;
+  uint128_t max_wax_possible = safeMulUInt128( uint128_t(s.wax_bucket.amount), SCALE_FACTOR_1E18 ) / lp_details.alcors_lswax_price;
+  uint128_t max_lswax_possible = uint128_t(s.lswax_bucket.amount);
 
   // Determine the limiting factor
   uint128_t wax_to_add, lswax_to_add;
   if (max_wax_possible <= max_lswax_possible) {
       // WAX is the limiting factor
-      wax_to_add = (uint128_t) s.wax_bucket.amount;
+      wax_to_add = uint128_t(s.wax_bucket.amount);
       lswax_to_add = safeMulUInt128( wax_to_add, SCALE_FACTOR_1E18 ) / lp_details.alcors_lswax_price;
   } else {
       // LSWAX is the limiting factor
-      lswax_to_add = (uint128_t) s.lswax_bucket.amount;
+      lswax_to_add = uint128_t(s.lswax_bucket.amount);
 
       /** if alcor price < 1e18,
        *  multiplying it by an asset is acceptable
@@ -39,11 +39,11 @@ void polcontract::add_liquidity( state3& s, liquidity_struct& lp_details ){
 
   }
 
-  lp_details.poolA.amountToAdd = lp_details.aIsWax ? asset( (int64_t) wax_to_add, WAX_SYMBOL ) : asset( (int64_t) lswax_to_add, LSWAX_SYMBOL );
-  lp_details.poolB.amountToAdd = !lp_details.aIsWax ? asset( (int64_t) wax_to_add, WAX_SYMBOL ) : asset( (int64_t) lswax_to_add, LSWAX_SYMBOL );
+  lp_details.poolA.amountToAdd = lp_details.aIsWax ? asset( int64_t(wax_to_add), WAX_SYMBOL ) : asset( int64_t(lswax_to_add), LSWAX_SYMBOL );
+  lp_details.poolB.amountToAdd = !lp_details.aIsWax ? asset( int64_t(wax_to_add), WAX_SYMBOL ) : asset( int64_t(lswax_to_add), LSWAX_SYMBOL );
 
-  lp_details.poolA.minAsset = lp_details.aIsWax ? asset( calculate_asset_share( (int64_t) wax_to_add, 99000000), WAX_SYMBOL ) : asset( calculate_asset_share( (int64_t) lswax_to_add, 99000000), LSWAX_SYMBOL );
-  lp_details.poolB.minAsset = !lp_details.aIsWax ? asset( calculate_asset_share( (int64_t) wax_to_add, 99000000), WAX_SYMBOL ) : asset( calculate_asset_share( (int64_t) lswax_to_add, 99000000), LSWAX_SYMBOL );
+  lp_details.poolA.minAsset = lp_details.aIsWax ? asset( calculate_asset_share( int64_t(wax_to_add), 99000000), WAX_SYMBOL ) : asset( calculate_asset_share( int64_t(lswax_to_add), 99000000), LSWAX_SYMBOL );
+  lp_details.poolB.minAsset = !lp_details.aIsWax ? asset( calculate_asset_share( int64_t(wax_to_add), 99000000), WAX_SYMBOL ) : asset( calculate_asset_share( int64_t(lswax_to_add), 99000000), LSWAX_SYMBOL );
 
   //debit the amounts from wax bucket and lswax bucket
   if(lp_details.aIsWax){
@@ -71,11 +71,11 @@ void polcontract::add_liquidity( state3& s, liquidity_struct& lp_details ){
       _self,
       lp_details.poolA.amountToAdd,
       lp_details.poolB.amountToAdd,
-      (int32_t) -443580,
-      (int32_t) 443580,
+      int32_t(-443580),
+      int32_t(443580),
       lp_details.poolA.minAsset,
       lp_details.poolB.minAsset,
-      (uint32_t) 0,
+      uint32_t(0),
     }
 
   ).send();
@@ -86,19 +86,19 @@ void polcontract::add_liquidity( state3& s, liquidity_struct& lp_details ){
 
 int64_t polcontract::cpu_rental_price(const uint64_t& days, const int64_t& price_per_day, const int64_t& amount){
   //formula is days * amount * price_per_day
-  uint128_t daily_cost = safeMulUInt128( (uint128_t) amount, (uint128_t) price_per_day );
-  uint128_t expected_amount = safeMulUInt128( daily_cost, (uint128_t) days ) / SCALE_FACTOR_1E8;
-  return (int64_t) expected_amount;
+  uint128_t daily_cost = safeMulUInt128( uint128_t(amount), uint128_t(price_per_day) );
+  uint128_t expected_amount = safeMulUInt128( daily_cost, uint128_t(days) ) / SCALE_FACTOR_1E8;
+  return int64_t(expected_amount);
 }
 
 int64_t polcontract::cpu_rental_price_from_seconds(const uint64_t& seconds, const int64_t& price_per_day, const uint64_t& amount){
-  uint128_t daily_cost = safeMulUInt128( (uint128_t) amount, (uint128_t) price_per_day );
-  uint128_t expected_amount = safeMulUInt128( (uint128_t) seconds, daily_cost ) / safeMulUInt128( (uint128_t) SECONDS_PER_DAY, SCALE_FACTOR_1E8 );
-  return (int64_t) expected_amount;
+  uint128_t daily_cost = safeMulUInt128( uint128_t(amount), uint128_t(price_per_day) );
+  uint128_t expected_amount = safeMulUInt128( uint128_t(seconds), daily_cost ) / safeMulUInt128( uint128_t(SECONDS_PER_DAY), SCALE_FACTOR_1E8 );
+  return int64_t(expected_amount);
 }
 
 uint64_t polcontract::days_to_seconds(const uint64_t& days){
-  return (uint64_t) SECONDS_PER_DAY * days;
+  return uint64_t(SECONDS_PER_DAY * days);
 }
 
 liquidity_struct polcontract::get_liquidity_info(config2 c, dapp_tables::state ds){
@@ -160,8 +160,8 @@ std::vector<std::string> polcontract::parse_memo(std::string memo){
 }
 
 uint128_t polcontract::seconds_to_days_1e6(const uint64_t& seconds){
-  uint128_t seconds_1e6 = safeMulUInt128( (uint128_t) seconds, SCALE_FACTOR_1E6 );
-  return (uint128_t) seconds_1e6 / (uint128_t) SECONDS_PER_DAY;
+  uint128_t seconds_1e6 = safeMulUInt128( uint128_t(seconds), SCALE_FACTOR_1E6 );
+  return uint128_t(seconds_1e6) / uint128_t(SECONDS_PER_DAY);
 }
 
 void polcontract::transfer_tokens(const name& user, const asset& amount_to_send, const name& contract, const std::string& memo){

@@ -47,7 +47,6 @@ CONTRACT polcontract : public contract {
 		ACTION rentcpu(const eosio::name& renter, const eosio::name& cpu_receiver);
 		ACTION setallocs(const uint64_t& liquidity_allocation_percent_1e6);
 		ACTION setrentprice(const eosio::asset& cost_to_rent_1_wax);
-		ACTION sync();
 
 		//Notifications
 		[[eosio::on_notify("eosio.token::transfer")]] void receive_wax_transfer(const name& from, const name& to, const asset& quantity, const std::string& memo);

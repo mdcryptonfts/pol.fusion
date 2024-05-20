@@ -12,12 +12,12 @@ int64_t polcontract::calculate_asset_share(const int64_t& quantity, const uint64
 	//formula is ( quantity * percentage ) / ( 100 * SCALE_FACTOR_1E6 )
 	if(quantity == 0) return 0;
 
-	uint128_t divisor = safeMulUInt128( static_cast<uint128_t>(quantity), static_cast<uint128_t>(percentage) );
+	uint128_t divisor = safeMulUInt128( uint128_t(quantity), uint128_t(percentage) );
 	
 	//since 100 * 1e6 = 1e8, we will just / SCALE_FACTOR_1E8 here to avoid extra unnecessary math
 	uint128_t result_128 = divisor / SCALE_FACTOR_1E8;
 
-  return static_cast<int64_t> (result_128);
+  return int64_t(result_128);
 }
 
 // determine how much of an e18 amount x% is = to
@@ -40,9 +40,9 @@ uint128_t polcontract::calculate_share_from_e18(const uint128_t& amount, const u
 	uint128_t amount_scaled = safeMulUInt128( scale_factor, amount );
 
 	uint128_t percentage_share = 
-		safeMulUInt128( amount_scaled, static_cast<uint128_t>(percentage) ) / safeMulUInt128( scale_factor, SCALE_FACTOR_1E8 );
+		safeMulUInt128( amount_scaled, uint128_t(percentage) ) / safeMulUInt128( scale_factor, SCALE_FACTOR_1E8 );
 
-  return static_cast<uint128_t> (percentage_share);
+  return uint128_t(percentage_share);
 }
 
 int64_t polcontract::internal_liquify(const int64_t& quantity, dapp_tables::state s){
@@ -58,16 +58,16 @@ int64_t polcontract::internal_liquify(const int64_t& quantity, dapp_tables::stat
      ){
       return quantity;
     } else {
-      	uint128_t result_128 = safeMulUInt128( (uint128_t) s.liquified_swax.amount, (uint128_t) quantity ) / (uint128_t) s.swax_currently_backing_lswax.amount;
-      	return (int64_t) result_128;
+      	uint128_t result_128 = safeMulUInt128( uint128_t(s.liquified_swax.amount), uint128_t(quantity) / uint128_t(s.swax_currently_backing_lswax.amount) );
+      	return int64_t(result_128);
     }		
 }
 
 int64_t polcontract::internal_unliquify(const int64_t& quantity, dapp_tables::state s){
 //contract should have already validated quantity before calling this
 
-  uint128_t result_128 = safeMulUInt128( (uint128_t) s.swax_currently_backing_lswax.amount, (uint128_t) quantity ) / (uint128_t) s.liquified_swax.amount;
-  return (int64_t) result_128;  
+  uint128_t result_128 = safeMulUInt128( uint128_t(s.swax_currently_backing_lswax.amount), uint128_t(quantity) ) / uint128_t(s.liquified_swax.amount);
+  return int64_t(result_128);  
 } 
 
 /** pool_ratio_1e18
@@ -77,14 +77,14 @@ int64_t polcontract::internal_unliquify(const int64_t& quantity, dapp_tables::st
  */
 
 uint128_t polcontract::pool_ratio_1e18(const int64_t& wax_amount, const int64_t& lswax_amount){
-	uint128_t wax_amount_1e18 = safeMulUInt128( (uint128_t) wax_amount, SCALE_FACTOR_1E18 );
+	uint128_t wax_amount_1e18 = safeMulUInt128( uint128_t(wax_amount), SCALE_FACTOR_1E18 );
 
 	if( wax_amount == lswax_amount ){
 		return SCALE_FACTOR_1E18;
 	}
 
-	check( wax_amount_1e18 > (uint128_t) lswax_amount, "ratio out of bounds" );
+	check( wax_amount_1e18 > uint128_t(lswax_amount), "ratio out of bounds" );
 
-	return wax_amount_1e18 / (uint128_t) lswax_amount;
+	return wax_amount_1e18 / uint128_t(lswax_amount);
 }
 
